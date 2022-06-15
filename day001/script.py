@@ -316,4 +316,3 @@ mailFlag = loadInto(log, mailFlag)
 
 if mailFlag:
     sendMail(log)
-    
