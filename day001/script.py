@@ -12,11 +12,12 @@
 #then stock into file
 
 import os
-import file
+from file import writeFile, readFile
 import platform
 import socket
 import psutil
 import subprocess
+import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -58,8 +59,8 @@ def clear():
 #Gets basic info on hostname and ip address
 def socketUse(log):
     hostname = socket.gethostname()
-    file.writeFile(log,"Hostname: "+hostname+"\n")
-    file.writeFile(log,"IP Address: "+socket.gethostbyname(hostname)+"\n")
+    writeFile(log,"Hostname: "+hostname+"\n")
+    writeFile(log,"IP Address: "+socket.gethostbyname(hostname)+"\n")
 
 
 #Gets info on OS    
@@ -69,27 +70,27 @@ def platformUse(log):
     node = f"Node Name: {my_system.node}"
     release = f"{my_system.release}"
     processor = f"Processor: {my_system.machine}"
-    file.writeFile(log, syst+"\n")
-    file.writeFile(log, node +" "+ release+"\n")
-    file.writeFile(log, processor+"\n")
+    writeFile(log, syst+"\n")
+    writeFile(log, node +" "+ release+"\n")
+    writeFile(log, processor+"\n")
 
 
 #Gets Virtual Memory usage, Disk usage and CPU usage
 def psutilUse(log, mailFlag):
     #Set threshold value to X%
     PERCENTTHRESHOLD = 0.65
-    file.writeFile(log, 'using '+str(PERCENTTHRESHOLD*100)+"""% as threshold\n""")
+    writeFile(log, 'using '+str(PERCENTTHRESHOLD*100)+"""% as threshold\n""")
     
     #Check and save virtual memory values
     TM = psutil.virtual_memory().total/(1024*1024*1024)
     totalTM = "Total Memory on / Partition: "+str(TM)+" GB"
     AM = psutil.virtual_memory().available/(1024*1024*1024)
     totalAM = "Memory Currently Available / Partition: "+str(AM)+" GB"
-    file.writeFile(log, totalTM+"\n")
-    file.writeFile(log, totalAM+"\n")
+    writeFile(log, totalTM+"\n")
+    writeFile(log, totalAM+"\n")
     #Check if available memory > total memory, if so, flag to send mail raised
     if AM > TM*PERCENTTHRESHOLD:
-        file.writeFile(log, "###!!!###\nHIGH MEMORY USE\n\n")
+        writeFile(log, "###!!!###\nHIGH MEMORY USE\n\n")
         mailFlag = 1
     
     #Check and save disk capacity values
@@ -98,23 +99,23 @@ def psutilUse(log, mailFlag):
     AD = psutil.disk_usage('/').free/(1024*1024*1024)
     totalAD = "Available Disk Capacity: "+str(AD)+" GB"
     rmF = "df -h :\n"+subprocess.run(['df', '-h'], stdout=subprocess.PIPE).stdout.decode('utf-8')
-    file.writeFile(log, totalTD+"\n")
-    file.writeFile(log, totalAD+"\n")
-    file.writeFile(log, rmF+"\n")
+    writeFile(log, totalTD+"\n")
+    writeFile(log, totalAD+"\n")
+    writeFile(log, rmF+"\n")
     #Check if available  disk capacity > total capacity, if so, flag to send mail raised
     if AD > TD*PERCENTTHRESHOLD:
-        file.writeFile(log, "###!!!###\nLOW AVAILABLE SPACE ON DISK\n\n")
+        writeFile(log, "###!!!###\nLOW AVAILABLE SPACE ON DISK\n\n")
         mailFlag = 1
     
     #Check and save cpu use values
     numCPU = "Number of logical CPUs :"+str(psutil.cpu_count(logical=True))
     use = psutil.cpu_percent(interval=1)
     useCPU = "Current % of CPU use: "+str(use)
-    file.writeFile(log, numCPU+"\n")
-    file.writeFile(log, useCPU+"\n")
+    writeFile(log, numCPU+"\n")
+    writeFile(log, useCPU+"\n")
     #Check if CPU use > threshold, if so, flag to send mail raised
     if use > 100 * PERCENTTHRESHOLD:
-        file.writeFile(log, "###!!!###\nHIGH CPU USE\n\n")
+        writeFile(log, "###!!!###\nHIGH CPU USE\n\n")
         mailFlag = 1
     
     return mailFlag
@@ -132,9 +133,9 @@ def getServiceState(log,serviceStr,mailFlag):
     #if service inactive (dead), raise mail flag
     if "dead" in outputService:
         mailFlag = 1
-        file.writeFile(log, "###!!!###\n"+serviceStr+" SERVICE INACTIVE\n\n")
-    file.writeFile(log, outputService+"\n")
-    file.writeFile(log,"\n")
+        writeFile(log, "###!!!###\n"+serviceStr+" SERVICE INACTIVE\n\n")
+    writeFile(log, outputService+"\n")
+    writeFile(log,"\n")
     return mailFlag
 
 
@@ -161,14 +162,14 @@ def servicesState(log, mailFlag):
         else: 
             outputPingWeb = "ping web :\n"+pingWeb+"\n"
             print("ping to "+web+" done")
-        file.writeFile(log, outputPingWeb)
-        file.writeFile(log,"\n")
+        writeFile(log, outputPingWeb)
+        writeFile(log,"\n")
         
     #if all pings failed raise mail flag
     if webFlag == WEBTEST.__len__():
-        file.writeFile(log,"###!!!###\nALL PINGS TO TEST WEBSITES FAILED\n\n")
+        writeFile(log,"###!!!###\nALL PINGS TO TEST WEBSITES FAILED\n\n")
         mailFlag = 1
-    file.writeFile(log,"\n")
+    writeFile(log,"\n")
     print("ping internet done")
     
     
@@ -180,18 +181,18 @@ def servicesState(log, mailFlag):
         #if ssl connection failed, add one to ssl flag
         if not ssl:
             sslFlag += 1
-            file.writeFile(log, "###!!!###\nSSL TEST FAILED\n\n")
+            writeFile(log, "###!!!###\nSSL TEST FAILED\n\n")
             outputSSL ="SSL test to "+web+" failed"+ssl
         else:
             outputSSL ="SSL test to "+web+": "+ssl
-        file.writeFile(log, outputSSL+"\n")
-        file.writeFile(log,"\n")
+        writeFile(log, outputSSL+"\n")
+        writeFile(log,"\n")
     
     #if all connection failed raise mail flag
     if sslFlag == WEBTEST.__len__():
-        file.writeFile(log,"###!!!###\nALL SSL TESTS TO TEST WEBSITES FAILED\n\n")
+        writeFile(log,"###!!!###\nALL SSL TESTS TO TEST WEBSITES FAILED\n\n")
         mailFlag = 1
-    file.writeFile(log,"\n")
+    writeFile(log,"\n")
     print("check ssl done")
     
     #Call to function checking for status of statuses in serviceArray
@@ -211,26 +212,27 @@ def loadInto(log, mailFlag):
     clear()
     with open(log,'w') as f:
         f.write("This is your Sys log:\n")
-    file.writeFile(log,"\n")
+    writeFile(log, "Log Date: "+str(datetime.datetime.now())+"\n")
+    writeFile(log,"\n")
     print("title done")
     
     socketUse(log)
-    file.writeFile(log,"\n")
+    writeFile(log,"\n")
     print("socket done")
     
     platformUse(log)
-    file.writeFile(log,"\n")
+    writeFile(log,"\n")
     print("platform done")
     
     mailFlag1 = psutilUse(log,mailFlag)
-    file.writeFile(log,"\n")
+    writeFile(log,"\n")
     print("psutil done")
     
     mailFlag2 = servicesState(log,mailFlag)
     print("service done")
     
     clear()
-    file.readFile(log)
+    readFile(log)
     
     #this lines ensures a previous flag isnt overwritten
     return max(mailFlag1,mailFlag2)
