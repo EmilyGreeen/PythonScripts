@@ -165,7 +165,7 @@ def servicesState(log, mailFlag):
     writeFile(log, "\n"+"-"*5+"PING, HTTP, SSL"+"-"*5+"\n\n")
     
     #Chapter Title
-    writeFile(log, "-"*3+"PING"+"-"*3+"\n")
+    writeFile(log, "-"*3+"PING"+"-"*3+"\n\n")
     #test and save result of ping to websites
     webFlag = 0
     for web in WEBTEST:
@@ -173,10 +173,11 @@ def servicesState(log, mailFlag):
         #if ping to web failed, add one to web flag
         if not pingWeb or "100% packet loss" in pingWeb:
             webFlag += 1
-            outputPingWeb = "###!!!###\nPING TO "+web+" FAILED\n\n"
+            outputPingWeb = "###!!!###\nPING TO "+web+" FAILED\n"
             print("ping to "+web+" failed")
         else: 
-            outputPingWeb = "ping web :\n"+pingWeb+"\n"
+            pingWeb = pingWeb.splitlines()[6:]
+            outputPingWeb = "\n".join(pingWeb)+"\n"
             print("ping to "+web+" done")
         writeFile(log, outputPingWeb)
         writeFile(log,"\n")
@@ -227,23 +228,23 @@ def servicesState(log, mailFlag):
         #if ssl connection failed, add one to ssl flag
         if not ssl:
             sslFlag += 1
-            writeFile(log, "###!!!###\nSSL TEST FAILED\n\n")
-            outputSSL ="SSL test to "+web+" failed"+ssl
+            writeFile(log, "###!!!###\nSSL TEST FAILED\n")
+            outputSSL ="SSL test to "+web+" failed\n"
         else:
             outputSSL ="SSL test to "+web+": "+ssl
-        writeFile(log, outputSSL+"\n")
-        writeFile(log,"\n\n")
+        writeFile(log, outputSSL)
+        writeFile(log,"\n")
     
     #if all connection failed raise mail flag
     if sslFlag == WEBTEST.__len__():
         writeFile(log,"###!!!###\nALL SSL TESTS TO TEST WEBSITES FAILED\n\n")
         mailFlag = 1
-    writeFile(log,"\n")
+    writeFile(log,"\n\n")
     print("check ssl done")
     
     
-    #Chapter Title
-    writeFile(log, "-"*3+"SERVICES"+"-"*3+"\n")
+    #Section Title
+    writeFile(log, "-"*5+"SERVICES"+"-"*5+"\n")
     #Call to function checking for status of statuses in serviceArray
     serviceArray = ["mariadb","ssh","apache2","mysql"]
     flagArray = []
@@ -259,8 +260,8 @@ def servicesState(log, mailFlag):
 
 #We test our connection to specified database
 def tryDBConnection(log,mailFlag):
-    #Chapter Title
-    writeFile(log, "-"*3+"DATABASE CONNECTION"+"-"*3+"\n")
+    #Section Title
+    writeFile(log, "-"*5+"DATABASE CONNECTION"+"-"*5+"\n")
     DB = "sakila"
     try:
         connection = database.connect(	user="root",
