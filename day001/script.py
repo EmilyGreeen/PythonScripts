@@ -122,12 +122,11 @@ def psutilUse(log, mailFlag):
     return mailFlag
 
 
+#general function to test and save result of service status
 def getServiceState(log,serviceStr,mailFlag):
-    #test and save result of mysql service status
-    if serviceStr == "mariadb" or serviceStr == "mysql":
-        head = 5
-    else:
-        head = 3
+    #db services have different status outputs
+    head = (5,3)[serviceStr == "mariadb" or serviceStr == "mysql"]
+    
     service =  os.popen('echo | systemctl status '+serviceStr+'.service | head -n '+str(head)+' | tail -n 1')
     outputService = serviceStr+" service state :"+service.read()
     print("check status "+serviceStr+" done")
@@ -207,6 +206,7 @@ def servicesState(log, mailFlag):
     
     return mailFlag
 
+
 #We test our connection to specified database
 def tryDBConnection(log,mailFlag):
     DB = "sakila"
@@ -222,6 +222,7 @@ def tryDBConnection(log,mailFlag):
         mailFlag = 1
     print("database connection done")
     return mailFlag
+
 
 #Calls all previous functions and loads them into log file
 def loadInto(log, mailFlag):
