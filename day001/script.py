@@ -21,6 +21,7 @@ import mysql.connector as database
 import datetime
 import smtplib
 import requests
+import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -28,7 +29,7 @@ from email.mime.image import MIMEImage
 #Defines log to write to
 log = '/tmp/sys.log'
 mailFlag = 0
-
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 
 #function to send mail and attache log file
@@ -51,9 +52,9 @@ def sendMail(file):
             smtpObj.starttls()
             smtpObj.login(sender_email, "p3JpBW7jVpK8q62")
             smtpObj.sendmail(sender_email, receiver_email, msg.as_string())
-            print("mail sent")
+            logging.info("mail sent")
     except Exception as e:
-        print(e)
+        logging.error(e)
 
 #function to easily clear the screen
 def clear():
@@ -140,7 +141,7 @@ def getServiceState(log,serviceStr,mailFlag):
     
     service =  os.popen('echo | systemctl status '+serviceStr+'.service | head -n '+str(head)+' | tail -n 1')
     outputService = serviceStr+" service state :"+service.read()
-    print("check status "+serviceStr+" done")
+    logging.info("check status "+serviceStr+" done")
     #if service inactive (dead), raise mail flag
     if "dead" in outputService:
         mailFlag = 1
@@ -155,7 +156,7 @@ def servicesState(log, mailFlag):
     #get basic info for network tests
     hostname = socket.gethostname()
     ip = socket.gethostbyname(socket.gethostname())
-    print("ip get done")
+    logging.info("ip get done")
     
     
     #Websites to test connection to
@@ -174,11 +175,11 @@ def servicesState(log, mailFlag):
         if not pingWeb or "100% packet loss" in pingWeb:
             webFlag += 1
             outputPingWeb = "###!!!###\nPING TO "+web+" FAILED\n"
-            print("ping to "+web+" failed")
+            logging.info("ping to "+web+" failed")
         else: 
             pingWeb = pingWeb.splitlines()[6:]
             outputPingWeb = "\n".join(pingWeb)+"\n"
-            print("ping to "+web+" done")
+            logging.info("ping to "+web+" done")
         writeFile(log, outputPingWeb)
         writeFile(log,"\n")
         
@@ -187,7 +188,7 @@ def servicesState(log, mailFlag):
         writeFile(log,"###!!!###\nALL PINGS TO TEST WEBSITES FAILED\n\n")
         mailFlag = 1
     writeFile(log,"\n")
-    print("ping internet done")
+    logging.info("ping internet done")
     
     
     #Chapter Title
@@ -198,15 +199,15 @@ def servicesState(log, mailFlag):
         try:
             r = requests.get("http://"+web)
         except Exception as e:
-            print(e)
+            logging.info(e)
             r = -1
         if "200" in str(r):
             outputHttpWeb = "http get to "+web+": "+str(r)+" OK\n"
-            print("http get to http://"+web+" done -- "+outputHttpWeb)
+            logging.info("http get to http://"+web+" done -- "+outputHttpWeb)
         else:
             httpFlag += 1
             outputHttpWeb = "###!!!###\nHTTP GET TO http://"+web+" FAILED\nhttp get : "+str(r)+"\n"
-            print("http get to http://"+web+" failed -- "+outputHttpWeb)
+            logging.info("http get to http://"+web+" failed -- "+outputHttpWeb)
         writeFile(log, outputHttpWeb)
         writeFile(log,"\n")
         
@@ -215,7 +216,7 @@ def servicesState(log, mailFlag):
         writeFile(log,"###!!!###\nALL HTTP GET TO TEST WEBSITES FAILED\n\n")
         mailFlag = 1
     writeFile(log,"\n\n")
-    print("http get internet done")            
+    logging.info("http get internet done")            
     
     
     #Chapter Title
@@ -223,7 +224,7 @@ def servicesState(log, mailFlag):
     #test and save result of ssl connexion to google.fr
     sslFlag = 0
     for web in WEBTEST:
-        sslCmd = os.popen('echo | openssl s_client -showcerts -connect '+web+':443 | grep \"CONNECTED\"')
+        sslCmd = os.popen('echo | openssl s_client -verify_quiet -showcerts -connect '+web+':443 | grep \"CONNECTED\"')
         ssl= sslCmd.read()
         #if ssl connection failed, add one to ssl flag
         if not ssl:
@@ -240,7 +241,7 @@ def servicesState(log, mailFlag):
         writeFile(log,"###!!!###\nALL SSL TESTS TO TEST WEBSITES FAILED\n\n")
         mailFlag = 1
     writeFile(log,"\n\n")
-    print("check ssl done")
+    logging.info("check ssl done")
     
     
     #Section Title
@@ -273,7 +274,7 @@ def tryDBConnection(log,mailFlag):
     except Exception as e:
         writeFile(log, str(e))
         mailFlag = 1
-    print("database connection done")
+    logging.info("database connection done")
     return mailFlag
 
 
@@ -284,25 +285,25 @@ def loadInto(log, mailFlag):
         f.write("This is your Sys log:\n")
     writeFile(log, "Log Date: "+str(datetime.datetime.now())+"\n")
     writeFile(log,"\n")
-    print("title done")
+    logging.info("title done")
     
     socketUse(log)
     writeFile(log,"\n")
-    print("socket done")
+    logging.info("socket done")
     
     platformUse(log)
     writeFile(log,"\n")
-    print("platform done")
+    logging.info("platform done")
     
     mailFlag1 = psutilUse(log,mailFlag)
     writeFile(log,"\n")
-    print("psutil done")
+    logging.info("psutil done")
     
     mailFlag2 = servicesState(log,mailFlag)
-    print("service done")
+    logging.info("service done")
     
     mailFlag3 = tryDBConnection(log,mailFlag)
-    print("service done")
+    logging.info("service done")
     
     clear()
     readFile(log)
