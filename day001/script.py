@@ -33,7 +33,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 
 def sendMail(file):
-    """function to send mail and attache log file
+    """
+    function to send mail and attache log file
 
     Args:
         file (file): log file to attach to mail
@@ -154,8 +155,18 @@ def psutilUse(log, mailFlag):
     return mailFlag
 
 
-#general function to test and save result of service status
 def getServiceState(log,serviceStr,mailFlag):
+    """_summary_
+    general function to test and save result of service status
+
+    Args:
+        log (file): log file in which to store data
+        serviceStr (str): service name
+        mailFlag (int): flag used as bool to signal sending mail
+
+    Returns:
+        int: signal send mail
+    """
     #db services have different status outputs
     head = 5 if serviceStr == "mariadb" or serviceStr == "mysql" else 3
     
