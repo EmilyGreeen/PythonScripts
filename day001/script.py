@@ -32,8 +32,12 @@ mailFlag = 0
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 
-#function to send mail and attache log file
 def sendMail(file):
+    """function to send mail and attache log file
+
+    Args:
+        file (file): log file to attach to mail
+    """
     sender_email = "emgreendev@outlook.fr"
     receiver_email = sender_email
     
@@ -56,20 +60,30 @@ def sendMail(file):
     except Exception as e:
         logging.error(e)
 
-#function to easily clear the screen
+
 def clear():
+    """function to easily clear the screen
+    """
     subprocess.call('clear', shell=True)
 
 
-#Gets basic info on hostname and ip address
 def socketUse(log):
+    """Gets basic info on hostname and ip address
+
+    Args:
+        log (file): log file in which to store data
+    """
     hostname = socket.gethostname()
     writeFile(log,"Hostname: "+hostname+"\n")
     writeFile(log,"IP Address: "+socket.gethostbyname(hostname)+"\n")
 
 
-#Gets info on OS    
 def platformUse(log):
+    """Gets info on OS
+    
+    Args:
+        log (file): log file in which to store data
+    """
     my_system = platform.uname()
     syst = f"System: {my_system.system}"
     node = f"Node Name: {my_system.node}"
@@ -80,8 +94,14 @@ def platformUse(log):
     writeFile(log, processor+"\n")
 
 
-#Gets Virtual Memory usage, Disk usage and CPU usage
 def psutilUse(log, mailFlag):
+    """Gets Virtual Memory usage, Disk usage and CPU usage
+    
+    Args:
+        log (file): log file in which to store data
+        mailFlag (int): flag used as bool to signal sending mail
+    """
+    
     #Section title
     writeFile(log, "-"*5+"MEM, DISK, CPU"+"-"*5+"\n")
     
