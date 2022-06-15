@@ -101,6 +101,9 @@ def psutilUse(log, mailFlag):
     Args:
         log (file): log file in which to store data
         mailFlag (int): flag used as bool to signal sending mail
+
+    Returns:
+        int: signal send mail
     """
     
     #Section title
@@ -156,8 +159,7 @@ def psutilUse(log, mailFlag):
 
 
 def getServiceState(log,serviceStr,mailFlag):
-    """_summary_
-    general function to test and save result of service status
+    """general function to test and save result of service status
 
     Args:
         log (file): log file in which to store data
@@ -167,6 +169,7 @@ def getServiceState(log,serviceStr,mailFlag):
     Returns:
         int: signal send mail
     """
+    
     #db services have different status outputs
     head = 5 if serviceStr == "mariadb" or serviceStr == "mysql" else 3
     
@@ -182,8 +185,16 @@ def getServiceState(log,serviceStr,mailFlag):
     return mailFlag
 
 
-#Gets info on services running currently  
 def servicesState(log, mailFlag):
+    """Gets info on network and services running currently
+
+    Args:
+        log (file): log file in which to store data
+        mailFlag (int): flag used as bool to signal sending mail
+
+    Returns:
+        int: signal send mail
+    """
     #get basic info for network tests
     hostname = socket.gethostname()
     ip = socket.gethostbyname(socket.gethostname())
@@ -290,8 +301,16 @@ def servicesState(log, mailFlag):
     return mailFlag
 
 
-#We test our connection to specified database
 def tryDBConnection(log,mailFlag):
+    """test our connection to specified database
+
+    Args:
+        log (file): log file in which to store data
+        mailFlag (int): flag used as bool to signal sending mail
+
+    Returns:
+        int: signal send mail
+    """
     #Section Title
     writeFile(log, "-"*5+"DATABASE CONNECTION"+"-"*5+"\n")
     DB = "sakila"
@@ -309,8 +328,16 @@ def tryDBConnection(log,mailFlag):
     return mailFlag
 
 
-#Calls all previous functions and loads them into log file
 def loadInto(log, mailFlag):
+    """Calls all previous functions and loads them into log file
+
+    Args:
+        log (file): log file in which to store data
+        mailFlag (int): flag used as bool to signal sending mail
+
+    Returns:
+        int: signal send mail
+    """
     clear()
     with open(log,'w') as f:
         f.write("This is your Sys log:\n")
