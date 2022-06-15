@@ -17,6 +17,7 @@ import platform
 import socket
 import psutil
 import subprocess
+import mysql.connector as database
 import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -148,7 +149,7 @@ def servicesState(log, mailFlag):
     
     
     #Websites to test connection to
-    WEBTEST = [ip,"google.fr","amazon.fr","ebay.com","discord.com","208.67.222.222"]
+    WEBTEST = [ip,"google.fr","amazon.fr","ebay.com","discord.com","208.67.222.222","badwebsite.test"]
 
     #test and save result of ping to websites
     webFlag = 0
@@ -206,6 +207,21 @@ def servicesState(log, mailFlag):
     
     return mailFlag
 
+#We test our connection to specified database
+def tryDBConnection(log,mailFlag):
+    DB = "sakila"
+    try:
+        connection = database.connect(	user="root",
+                                    password="root",
+                                    host="localhost", 
+                                    database=DB
+                                    )
+        writeFile(log, "connection to database "+DB+" successful")
+    except Exception as e:
+        writeFile(log, str(e))
+        mailFlag = 1
+    print("database connection done")
+    return mailFlag
 
 #Calls all previous functions and loads them into log file
 def loadInto(log, mailFlag):
@@ -231,11 +247,14 @@ def loadInto(log, mailFlag):
     mailFlag2 = servicesState(log,mailFlag)
     print("service done")
     
+    mailFlag3 = tryDBConnection(log,mailFlag)
+    print("service done")
+    
     clear()
     readFile(log)
     
     #this lines ensures a previous flag isnt overwritten
-    return max(mailFlag1,mailFlag2)
+    return max(mailFlag1,mailFlag2,mailFlag3)
 
 
 mailFlag = loadInto(log, mailFlag)
