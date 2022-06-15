@@ -12,6 +12,7 @@
 #then stock into file
 
 import os
+import sys
 from file import writeFile, readFile
 import platform
 import socket
@@ -27,8 +28,8 @@ from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
 #Defines log to write to
-log = '/tmp/sys.log'
-mailFlag = 0
+#log = '/tmp/sys.log'
+#mailFlag = 0
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 
@@ -374,6 +375,6 @@ def main(log, mailFlag):
 
     if mailFlag:
         sendMail(log)
-        
-if __name__ == '__main__':
-    main(log, mailFlag)
+    
+    return 0
+
