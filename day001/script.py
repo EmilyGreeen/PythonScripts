@@ -369,8 +369,11 @@ def loadInto(log, mailFlag):
     #this lines ensures a previous flag isnt overwritten
     return max(mailFlag1,mailFlag2,mailFlag3)
 
+def main(log, mailFlag):
+    mailFlag = loadInto(log, mailFlag)
 
-mailFlag = loadInto(log, mailFlag)
-
-if mailFlag:
-    sendMail(log)
+    if mailFlag:
+        sendMail(log)
+        
+if __name__ == '__main__':
+    main(log, mailFlag)
