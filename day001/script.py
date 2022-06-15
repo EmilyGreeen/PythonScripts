@@ -20,6 +20,7 @@ import subprocess
 import mysql.connector as database
 import datetime
 import smtplib
+import requests
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
@@ -27,6 +28,8 @@ from email.mime.image import MIMEImage
 #Defines log to write to
 log = '/tmp/sys.log'
 mailFlag = 0
+
+
 
 #function to send mail and attache log file
 def sendMail(file):
@@ -78,10 +81,15 @@ def platformUse(log):
 
 #Gets Virtual Memory usage, Disk usage and CPU usage
 def psutilUse(log, mailFlag):
+    #Section title
+    writeFile(log, "-"*5+"MEM, DISK, CPU"+"-"*5+"\n")
+    
     #Set threshold value to X%
     PERCENTTHRESHOLD = 0.65
-    writeFile(log, 'using '+str(PERCENTTHRESHOLD*100)+"""% as threshold\n""")
+    writeFile(log, 'using '+str(PERCENTTHRESHOLD*100)+"""% as threshold\n\n""")
     
+    #Chapter Title
+    writeFile(log, "-"*3+"MEMORY"+"-"*3+"\n")
     #Check and save virtual memory values
     TM = psutil.virtual_memory().total/(1024*1024*1024)
     totalTM = "Total Memory on / Partition: "+str(TM)+" GB"
@@ -94,6 +102,7 @@ def psutilUse(log, mailFlag):
         writeFile(log, "###!!!###\nHIGH MEMORY USE\n\n")
         mailFlag = 1
     
+    writeFile(log, "\n"+"-"*3+"DISK"+"-"*3+"\n")
     #Check and save disk capacity values
     TD = psutil.disk_usage('/').total/(1024*1024*1024)
     totalTD = "Disk Capacity: "+str(TD)+" GB"
@@ -108,6 +117,8 @@ def psutilUse(log, mailFlag):
         writeFile(log, "###!!!###\nLOW AVAILABLE SPACE ON DISK\n\n")
         mailFlag = 1
     
+    #Chapter Title
+    writeFile(log, "-"*3+"CPU"+"-"*3+"\n")
     #Check and save cpu use values
     numCPU = "Number of logical CPUs :"+str(psutil.cpu_count(logical=True))
     use = psutil.cpu_percent(interval=1)
@@ -150,6 +161,11 @@ def servicesState(log, mailFlag):
     #Websites to test connection to
     WEBTEST = [ip,"google.fr","amazon.fr","ebay.com","discord.com","208.67.222.222","badwebsite.test"]
 
+    #Section title
+    writeFile(log, "\n"+"-"*5+"PING, HTTP, SSL"+"-"*5+"\n\n")
+    
+    #Chapter Title
+    writeFile(log, "-"*3+"PING"+"-"*3+"\n")
     #test and save result of ping to websites
     webFlag = 0
     for web in WEBTEST:
@@ -173,6 +189,36 @@ def servicesState(log, mailFlag):
     print("ping internet done")
     
     
+    #Chapter Title
+    writeFile(log, "-"*3+"HTTP"+"-"*3+"\n")
+    #test and save result of http get requests to websites
+    httpFlag = 0
+    for web in WEBTEST:
+        try:
+            r = requests.get("http://"+web)
+        except Exception as e:
+            print(e)
+            r = -1
+        if "200" in str(r):
+            outputHttpWeb = "http get to "+web+": "+str(r)+" OK\n"
+            print("http get to http://"+web+" done -- "+outputHttpWeb)
+        else:
+            httpFlag += 1
+            outputHttpWeb = "###!!!###\nHTTP GET TO http://"+web+" FAILED\nhttp get : "+str(r)+"\n"
+            print("http get to http://"+web+" failed -- "+outputHttpWeb)
+        writeFile(log, outputHttpWeb)
+        writeFile(log,"\n")
+        
+    #if all pings failed raise mail flag
+    if httpFlag == WEBTEST.__len__():
+        writeFile(log,"###!!!###\nALL HTTP GET TO TEST WEBSITES FAILED\n\n")
+        mailFlag = 1
+    writeFile(log,"\n\n")
+    print("http get internet done")            
+    
+    
+    #Chapter Title
+    writeFile(log, "-"*3+"SSL"+"-"*3+"\n")
     #test and save result of ssl connexion to google.fr
     sslFlag = 0
     for web in WEBTEST:
@@ -186,7 +232,7 @@ def servicesState(log, mailFlag):
         else:
             outputSSL ="SSL test to "+web+": "+ssl
         writeFile(log, outputSSL+"\n")
-        writeFile(log,"\n")
+        writeFile(log,"\n\n")
     
     #if all connection failed raise mail flag
     if sslFlag == WEBTEST.__len__():
@@ -195,6 +241,9 @@ def servicesState(log, mailFlag):
     writeFile(log,"\n")
     print("check ssl done")
     
+    
+    #Chapter Title
+    writeFile(log, "-"*3+"SERVICES"+"-"*3+"\n")
     #Call to function checking for status of statuses in serviceArray
     serviceArray = ["mariadb","ssh","apache2","mysql"]
     flagArray = []
@@ -204,11 +253,14 @@ def servicesState(log, mailFlag):
     if 1 in flagArray:
         mailFlag = 1
     
+    
     return mailFlag
 
 
 #We test our connection to specified database
 def tryDBConnection(log,mailFlag):
+    #Chapter Title
+    writeFile(log, "-"*3+"DATABASE CONNECTION"+"-"*3+"\n")
     DB = "sakila"
     try:
         connection = database.connect(	user="root",
@@ -262,3 +314,4 @@ mailFlag = loadInto(log, mailFlag)
 
 if mailFlag:
     sendMail(log)
+    
