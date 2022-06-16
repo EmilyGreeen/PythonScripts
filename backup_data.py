@@ -4,19 +4,13 @@ import os
 import mysql.connector as database
 from datetime import datetime
 
-backupDir = '/home/backup/'
 
-
-logdate = datetime.now()
-logdate = str(logdate.year)+"-"+str(logdate.month)+"-"+str(logdate.day)+"-"+str(logdate.hour)+"h"
-
-
-def archiveWebsite():
+def archiveWebsite(backupDir,logdate):
     os.system('cp -r /var/www/Basic-Website-using-HTML-CSS-master /home/backup')
     os.system('zip '+backupDir+'websiteArchive'+logdate+'.zip '+backupDir+'Basic-Website-using-HTML-CSS-master')
     os.system('rm -rf '+backupDir+'Basic-Website-using-HTML-CSS-master')
 
-def archiveDatabase():
+def archiveDatabase(backupDir,logdate):
     try:
         connexion = database.connect(user ='root',
                                     password = '123',
@@ -30,4 +24,14 @@ def archiveDatabase():
     except:
         print("connexion failed")
 
-    
+def main():
+    backupDir = '/home/backup/'
+
+
+    logdate = datetime.now()
+    logdate = str(logdate.year)+"-"+str(logdate.month)+"-"+str(logdate.day)+"-"+str(logdate.hour)+"h"
+
+    archiveWebsite(backupDir,logdate)
+    archiveDatabase(backupDir,logdate)
+
+main()
