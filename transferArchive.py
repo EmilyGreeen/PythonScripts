@@ -13,7 +13,7 @@ def sshSaveToArchive(host,port,username,password):
     ssh.connect(hostname=host,port=port,username=username,password=password)
 
     os.system('sshpass -p '+password+' scp '+username+'@'+host+':/home/backup/*.zip /archivage')
-
+ 
     stdin, stdout, stderr = ssh.exec_command('rm -rf /home/backup/*.zip')
         
 
@@ -30,7 +30,6 @@ def checkRententionTime(retention):
     
     for file in files:
         fileDate=getFileDate(file)
-        print(fileDate)
         try:
             fileDateObj = datetime.datetime.strptime(fileDate, '%Y-%m-%d-%H')
         except:
