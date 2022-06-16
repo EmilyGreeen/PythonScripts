@@ -1,19 +1,15 @@
 #!/usr/bin/python3
 
-from inspect import getfile
 import os
 import re
 import datetime
-from tabnanny import check
 import paramiko
 
 def sshSaveToArchive(host,port,username,password):
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(hostname=host,port=port,username=username,password=password)
-
-    os.system('sshpass -p '+password+' scp '+username+'@'+host+':/home/backup/*.zip /archivage')
- 
+    ssh.connect(hostname=host)
+    os.system('scp '+username+'@'+host+':/home/backup/*.zip /archivage')
     stdin, stdout, stderr = ssh.exec_command('rm -rf /home/backup/*.zip')
         
 
